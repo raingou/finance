@@ -1,6 +1,12 @@
 /** biome-ignore-all lint/a11y/noStaticElementInteractions: <explanation> */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: <explanation> */
-import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import {
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import { type BillTagGroupDetail, useTag } from "@/hooks/use-tag";
 import { cn } from "@/utils";
 import {
@@ -23,6 +29,9 @@ function TagTrigger({
 }) {
     return (
         <div
+            onPointerDown={(e) => {
+                e.preventDefault();
+            }}
             onClick={onClick}
             className={cn(
                 "flex flex-shrink-0 items-center justify-center gap-2 with-tag-color border border-input px-2 py-1 rounded-md cursor-pointer",
@@ -61,22 +70,24 @@ function TagGroup({
               ? `#${groupSelected[0].name}`
               : `#${groupSelected[0].name} +${groupSelected.length - 1}`;
 
+    const [open, setOpen] = useState(false);
     // 如果标签组只包含一个标签，那么无需展开弹窗，可以点击直接选中/取消选中该标签
     if (group.tagIds?.length === 1) {
         const singleTagId = group.tagIds[0];
-        const selected = groupSelected.some((v) => v.id === singleTagId);
+        const isSingleSelected = groupSelected.some(
+            (v) => v.id === singleTagId,
+        );
         return (
             <TagTrigger
                 color={group.color}
-                selected={selected}
+                selected={isSingleSelected}
                 onClick={() => {
-                    if (selected) {
+                    if (isSingleSelected) {
                         onSelectChange(
-                            group.tagIds?.filter((v) => v !== singleTagId) ??
-                                [],
+                            selected?.filter((v) => v !== singleTagId) ?? [],
                         );
                     } else {
-                        onSelectChange([...(group.tagIds ?? []), singleTagId]);
+                        onSelectChange([...(selected ?? []), singleTagId]);
                     }
                 }}
             >
@@ -85,11 +96,12 @@ function TagGroup({
         );
     }
     return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger className="flex-shrink-0">
                 <TagTrigger
                     color={group.color}
                     selected={groupSelected.length > 0}
+                    onClick={() => setOpen(!open)}
                 >
                     {formatValue}
                 </TagTrigger>
