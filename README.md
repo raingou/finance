@@ -172,8 +172,6 @@ pnpm lint
 
 感谢您对本项目的支持！Cent目前仅由单人支持开发，您的捐赠将用于维护和持续开发。
 
----
-
 <details>
 <summary>点击查看</summary>
 
@@ -196,3 +194,29 @@ pnpm lint
 
 ---
 </details>
+
+
+---
+
+## 🙏 感谢墙 / Donor Wall
+
+感谢所有支持 Cent 项目的捐赠者！您的支持是我持续开发的动力。  
+Thank you to all donors who support the Cent project! Your support is the driving force behind my continued development.
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center">
+  <a href="">
+    <img src="https://api.dicebear.com/7.x/initials/svg?seed=一" width="60" height="60" alt="" style="border-radius: 50%;"/>
+    <br />
+    <sub><b>一**户</b></sub>
+  </a>
+</td>
+</tr>
+</table>
+
+</div>
+
+---
