@@ -2,8 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { v4 } from "uuid";
-import * as z from "zod/mini";
+import { z } from "zod";
 import { useShallow } from "zustand/shallow";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,6 +23,7 @@ import type { EditBill } from "@/store/ledger";
 import { useUserStore } from "@/store/user";
 import { cn } from "@/utils";
 import { showBillEditor } from "../bill-editor";
+import { isCancelError } from "../confirm/state";
 import BillItem from "../ledger/item";
 import modal from "../modal";
 import { Button } from "../ui/button";
@@ -36,6 +38,8 @@ import {
 } from "../ui/select";
 import { Switch } from "../ui/switch";
 import type { Scheduled } from "./type";
+
+type NeedBill = { id: string; entry: EditBill };
 
 const createFormSchema = (t: any) =>
     z.object({
@@ -68,7 +72,7 @@ export default function ScheduledEditForm({
     onCancel,
 }: {
     edit?: EditScheduled;
-    onConfirm?: (v?: EditScheduled & { needBills?: EditBill[] }) => void;
+    onConfirm?: (v?: EditScheduled & { needBills?: NeedBill[] }) => void;
     onCancel?: () => void;
 }) {
     const t = useIntl();
@@ -106,17 +110,26 @@ export default function ScheduledEditForm({
             end: data.end ? data.end.getTime() : undefined,
             latest: edit?.latest,
             id,
-        } as Scheduled & { needBills?: EditBill[] };
+        } as Scheduled & { needBills?: NeedBill[] };
         if (formatted.enabled) {
             const needBills = await fillScheduledBills(formatted);
             if (needBills.length > 0) {
-                await modal.prompt({
-                    title: t("scheduled-lack-bills", {
-                        n: needBills.length,
-                    }),
-                });
-                formatted.latest = Date.now() + 1;
-                formatted.needBills = needBills;
+                try {
+                    await modal.prompt({
+                        title: t("scheduled-lack-bills", {
+                            n: needBills.length,
+                        }),
+                    });
+
+                    formatted.latest = Date.now() + 1;
+                    formatted.needBills = needBills;
+                } catch (err) {
+                    if (!isCancelError(err)) {
+                        throw err;
+                    }
+
+                    toast.warning("已忽略此前的账单");
+                }
             }
         }
         onConfirm?.(formatted);
